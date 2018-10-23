@@ -55,8 +55,8 @@ Vulnerable situation before `swap_`:
 ```
 0x2020a0 uint32_t stack-ptr = 0x1   ──╮
 0x2020a4 uint32_t stack[0] = -0x2     │
-0x2020a8 uint32_t stack[0] = 0x0  <───╯
-0x2020ac uint32_t stack[0] = 0x0
+0x2020a8 uint32_t stack[1] = 0x0  <───╯
+0x2020ac uint32_t stack[2] = 0x0
 ```
 
 Vulnerable situation after `swap_`:
@@ -65,8 +65,8 @@ Vulnerable situation after `swap_`:
 0x20209c                              │
 0x2020a0 uint32_t stack-ptr = -0x2  ──╯
 0x2020a4 uint32_t stack[0] = 0x1      
-0x2020a8 uint32_t stack[0] = 0x0
-0x2020ac uint32_t stack[0] = 0x0
+0x2020a8 uint32_t stack[1] = 0x0
+0x2020ac uint32_t stack[2] = 0x0
 ```
 
 Once the emulated stack pointer is negative, anything in the .data section is fair game!
