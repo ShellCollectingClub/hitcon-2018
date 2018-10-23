@@ -47,9 +47,29 @@ Cool! I had not pwned any emulators before, so this was very exciting! I had to 
 
 ### Breakout
 
-It seems like the `pop` and `push` operations are properly bounds checking the emulated stack pointer. But the `swap_` command does not! It swaps the values at stack-ptr*-1* and stack-ptr*-2*. This is especially bad because the stack pointer is directly below the first item on the stack.
+It seems like the `pop` and `push` operations are properly bounds checking the emulated stack pointer. But the `swap_` command does not! It swaps the values at stack-ptr*-1* and stack-ptr*-2* without any regard for what stack-ptr is. This is especially bad because the stack pointer is directly below the first item on the stack:
 
 All I have to do is put a negative value on the stack, call `swap`, and now the stack pointer points outside our emulated stack! The payload for this looks something like `4294967270\`. Append that with a handful of '.' and this will leak out the .data section one %d at a time :)
+
+Vulnerable situation before `swap_`:
+```
+0x2020a0 uint32_t stack-ptr = 0x1   ──╮
+0x2020a4 uint32_t stack[0] = -0x2     │
+0x2020a8 uint32_t stack[0] = 0x0  <───╯
+0x2020ac uint32_t stack[0] = 0x0
+```
+
+Vulnerable situation after `swap_`:
+```
+0x202098                          <───╮
+0x20209c                              │
+0x2020a0 uint32_t stack-ptr = -0x2  ──╯
+0x2020a4 uint32_t stack[0] = 0x1      
+0x2020a8 uint32_t stack[0] = 0x0
+0x2020ac uint32_t stack[0] = 0x0
+```
+
+Once the emulated stack pointer is negative, anything in the .data section is fair game!
 
 ### Payload
 
